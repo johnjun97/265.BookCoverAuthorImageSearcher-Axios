@@ -1,0 +1,23 @@
+body {
+  background-color: Beige;
+}
+
+table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+
+thead tr {
+  border-bottom: 2px solid #333;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+h1 {
+  text-align: center;
+}

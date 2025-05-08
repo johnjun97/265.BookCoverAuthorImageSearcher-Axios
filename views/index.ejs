@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <%- include("partials/header.ejs") %>
+    <h1>Book Cover\Author Image Searcher</h1>
+  </head>
+  <body>
+    <form action="/search" method="POST">
+      <label for="Book\Author">Book\Author:</label>
+      <select id="book\author" name="book\author" required>
+        <option value="">Select an option</option>
+        <option value="A">Author</option>
+        <option value="B">Book Cover</option>
+      </select>
+      
+      <br /><br />
+      
+      <label for="identifier" title="Author photos can be accessed using OLID and ID" style="cursor: pointer;">Identifier: &#x24D8;</label>
+      <select id="identifier" name="identifier" required>
+        <option value="">Select an option</option>
+        <option value="ISBN">ISBN</option>
+        <option value="OCLC">OCLC</option>
+          <option value="LCCN">LCCN</option>
+          <option value="OLID">OLID</option>
+          <option value="ID">ID</option>
+        </select>
+        <br /><br />
+
+        <label for="key">Key:</label>
+        <input type="text" id="key" name="key"><br><br>
+
+        <label for="Size">Size:</label>
+        <select id="size" name="size" required>
+          <option value="">Select an option</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+        </select>
+        <input type="submit" value="Search" /><br>
+      </form>
+      <br>
+      <form action="/save" method="POST">
+        <% if (url && url.trim() == "don't have any search result because this is homepage") {%>
+          
+          <%} else if (error == ''){ %>
+            <% const cleanUrl = url.split('?')[0]; %>
+            Search: <%= cleanUrl %> 
+            <input type="hidden" name="url" value="<%= url %>" />
+            <input type="submit" value="Save" />
+            <br>
+            <img src="<%= url %>" />
+            <p> </p>
+            <%} else {%>
+              <% const cleanUrl = url.split('?')[0]; %>
+              Search: 
+              <%= cleanUrl %>
+              <img src="<%= url %>" />
+              <div style="color: red"><%= error %></div>
+
+          <% } %>
+      </form>
+
+
+    <% if (typeof errorMessage !== 'undefined') { %>
+    <div style="color: red"><strong>Error:</strong> <%= errorMessage %></div>
+    <% } else if (url) { %>
+    
+    <hr>
+
+    <div>
+      <% if (saved && saved.length > 0) { %>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Author</th>
+              <th>Identifier</th>
+              <th>Key Field</th>
+              <th>Size</th>
+              <th>Created At</th>
+              <th>Image</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% saved.forEach(item => { %>
+              <tr>
+                <td><%= item.id %></td>
+                <td><%= item.book_author %></td>
+                <td><%= item.identifier %></td>
+                <td><%= item.key_field %></td>
+                <td><%= item.size %></td>
+                <td><%= item.created_at %></td>
+                <td>
+                  <a href="https://covers.openlibrary.org/<%= item.book_author %>/<%= item.identifier %>/<%= item.key_field %>-L.jpg" target="_blank">
+                    <img src="https://covers.openlibrary.org/<%= item.book_author %>/<%= item.identifier %>/<%= item.key_field %>-S.jpg" alt="cover" width="50">
+                  </a>
+                </td>
+                <td>
+                  <form action="/delete" method="POST">
+                    <input type="hidden" name="id" value="<%= item.id %>">
+                    <input type="submit" value="Delete">
+                  </form>
+                </td>
+              </tr>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p style="text-align:center;">No records found.</p>
+      <% } %>
+    </div>
+    <% } else { %>
+    <p>No data available. (Something is wrong)</p>
+    <% } %> 
+
+    <% if (typeof successMessage !== 'undefined') { %>
+      <script>
+        alert("<%= successMessage %>");
+      </script>
+    <% } %>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const table = document.querySelector("table");
+        const headers = table.querySelectorAll("th");
+        let sortDirection = 1;
+    
+        headers.forEach((header, index) => {
+          header.style.cursor = "pointer";
+          header.addEventListener("click", () => {
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const type = header.innerText.toLowerCase().includes("id") ? "number" : "string";
+    
+            rows.sort((a, b) => {
+              const cellA = a.children[index].innerText.trim();
+              const cellB = b.children[index].innerText.trim();
+    
+              if (type === "number") {
+                return sortDirection * (parseInt(cellA) - parseInt(cellB));
+              } else {
+                return sortDirection * cellA.localeCompare(cellB);
+              }
+            });
+    
+            sortDirection *= -1; // reverse direction next click
+    
+            const tbody = table.querySelector("tbody");
+            tbody.innerHTML = "";
+            rows.forEach(row => tbody.appendChild(row));
+          });
+        });
+      });
+      
+
+    </script>
+
+<%- include("partials/footer.ejs") %>
+  </body>
+</html>
